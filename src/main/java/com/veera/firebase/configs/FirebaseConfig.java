@@ -1,6 +1,5 @@
 package com.veera.firebase.configs;
 
-import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
@@ -40,20 +39,22 @@ public class FirebaseConfig {
             System.out.println("======================================");
 
             if (FirebaseApp.getApps().isEmpty()) {
-                GoogleCredentials googleCredentials =GoogleCredentials.fromStream(
-                        new ClassPathResource(firebaseConfigPath)
-                                .getInputStream()
-                );
+                java.io.InputStream serviceAccount = new ClassPathResource(firebaseConfigPath).getInputStream();
+                GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount)
+                        /*.createScoped(java.util.Arrays.asList(
+                                "https://www.googleapis.com/auth/cloud-platform",
+                                "https://www.googleapis.com/auth/datastore"
+                        ))*/;
 
-                googleCredentials.refreshIfExpired();
-                AccessToken token = googleCredentials.refreshAccessToken();
-                System.out.println("✅ Access token obtained: " + token.getTokenValue().substring(0, 20) + "...");
-                System.out.println("Expires at: " + token.getExpirationTime());
-                FirebaseOptions options = FirebaseOptions.builder()
-                        .setCredentials(
-                                googleCredentials
-                        )
-                        .build();
+                FirebaseOptions.Builder builder = FirebaseOptions.builder()
+                        .setCredentials(credentials);
+
+                // Explicitly set the project ID to avoid null project ID issues
+                if (credentials instanceof com.google.auth.oauth2.ServiceAccountCredentials) {
+                    builder.setProjectId(((com.google.auth.oauth2.ServiceAccountCredentials) credentials).getProjectId());
+                }
+
+                FirebaseOptions options = builder.build();
 
                 FirebaseApp.initializeApp(options);
 
