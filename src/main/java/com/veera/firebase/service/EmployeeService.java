@@ -15,6 +15,11 @@ public class EmployeeService {
 
         Firestore firestore = FirestoreClient.getFirestore();
 
+      /*  DocumentSnapshot snapshot = firestore.collection(COLLECTION).document(employee.getId()).get().get();
+        if (snapshot.exists()) {
+            throw new com.veera.firebase.exception.EmployeeAlreadyExistsException("Employee already exists with ID: " + employee.getId());
+        }*/
+
         ApiFuture<WriteResult> future =
                 firestore.collection(COLLECTION)
                         .document(employee.getId())
